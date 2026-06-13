@@ -1,0 +1,5 @@
+#!/bin/bash
+# 将 WSL 中的内容复制到 Windows 剪切板（PowerShell .NET API，原生 Unicode）
+# 不用 clip.exe + iconv GBK，避免 X server 桥接回来时编码错乱
+/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -NoProfile -Command \
+  "[Console]::InputEncoding = [Console]::OutputEncoding = [Text.Encoding]::UTF8; Add-Type -AssemblyName System.Windows.Forms; \$text = [Console]::In.ReadToEnd(); if (\$text) { [System.Windows.Forms.Clipboard]::SetText(\$text) }"

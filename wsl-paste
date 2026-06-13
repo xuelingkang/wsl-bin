@@ -1,0 +1,3 @@
+#!/bin/bash
+# 从 Windows 剪切板读取内容到 WSL（优化版，.NET API）
+/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; [Console]::OutputEncoding = [Text.Encoding]::UTF8; [Console]::Write([System.Windows.Forms.Clipboard]::GetText())"
