@@ -16,16 +16,4 @@ case "${1:-}" in
     ;;
 esac
 
-powershell.exe -NoProfile -Command "
-  Add-Type -TypeDefinition '
-    using System;
-    using System.Runtime.InteropServices;
-    public class KeySender {
-        [DllImport(\"user32.dll\")] public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
-    }
-  '
-  & 'C:\Program Files\Rime\weasel-0.17.4\WeaselServer.exe' $arg
-  Start-Sleep -Milliseconds 50
-  [KeySender]::keybd_event(0x7C, 0, 0, [UIntPtr]::Zero)
-  [KeySender]::keybd_event(0x7C, 0, 2, [UIntPtr]::Zero)
-"
+powershell.exe -NoProfile -Command "& 'C:\Program Files\Rime\weasel-0.17.4\WeaselServer.exe' $arg"
