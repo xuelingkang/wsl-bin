@@ -16,4 +16,10 @@ case "${1:-}" in
     ;;
 esac
 
-powershell.exe -NoProfile -Command "& 'C:\Program Files\Rime\weasel-0.17.4\WeaselServer.exe' $arg"
+powershell.exe -NoProfile -Command "
+  \$exe = Get-ChildItem 'C:\Program Files\Rime' -Recurse -Filter 'WeaselServer.exe' |
+          Sort-Object LastWriteTime -Descending |
+          Select-Object -First 1 -ExpandProperty FullName
+  if (-not \$exe) { exit 1 }
+  & \$exe \$arg
+"
