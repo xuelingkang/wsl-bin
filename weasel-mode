@@ -2,6 +2,10 @@
 # Switch Weasel ASCII mode via WeaselServer.exe
 #   ascii  → English mode
 #   nascii → native mode (中文/日本語/한국어...)
+#
+# Path resolution order:
+#   1. WEASEL_SERVER env var (strict — if set, use it as-is)
+#   2. Registry (HKLM\Software\WOW6432Node\Rime\Weasel)
 
 case "${1:-}" in
   ascii)
@@ -17,9 +21,13 @@ case "${1:-}" in
 esac
 
 powershell.exe -NoProfile -Command "
-  \$exe = Get-ChildItem 'C:\Program Files\Rime' -Recurse -Filter 'WeaselServer.exe' |
-          Sort-Object LastWriteTime -Descending |
-          Select-Object -First 1 -ExpandProperty FullName
-  if (-not \$exe) { exit 1 }
+  \$exe = [Environment]::GetEnvironmentVariable('WEASEL_SERVER')
+  if (-not \$exe) {
+    \$reg = Get-ItemProperty 'HKLM:\Software\WOW6432Node\Rime\Weasel' -ErrorAction SilentlyContinue
+    if (\$reg -and \$reg.WeaselRoot -and \$reg.ServerExecutable) {
+      \$exe = Join-Path \$reg.WeaselRoot \$reg.ServerExecutable
+    }
+  }
+  if (-not \$exe -or -not (Test-Path \$exe)) { exit 1 }
   & \$exe \$arg
 "
