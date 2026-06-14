@@ -3,9 +3,7 @@
 #   ascii  → English mode
 #   nascii → native mode (中文/日本語/한국어...)
 #
-# Path resolution order:
-#   1. WEASEL_SERVER env var (strict — if set, use it as-is)
-#   2. Registry via reg.exe (HKLM\Software\WOW6432Node\Rime\Weasel)
+# Path: WEASEL_SERVER env var (required — no fallback)
 
 case "${1:-}" in
   ascii)
@@ -20,19 +18,9 @@ case "${1:-}" in
     ;;
 esac
 
-powershell.exe -NoProfile -Command "
-  \$exe = [Environment]::GetEnvironmentVariable('WEASEL_SERVER')
-  if (-not \$exe) {
-    \$root = reg query 'HKLM\Software\WOW6432Node\Rime\Weasel' /v WeaselRoot 2>\$null
-    if (\$LASTEXITCODE -eq 0) {
-      \$root = (\$root | Select-String 'REG_SZ\s+(.+)').Matches.Groups[1].Value
-      \$name = reg query 'HKLM\Software\WOW6432Node\Rime\Weasel' /v ServerExecutable 2>\$null
-      if (\$LASTEXITCODE -eq 0) {
-        \$name = (\$name | Select-String 'REG_SZ\s+(.+)').Matches.Groups[1].Value
-        \$exe = Join-Path \$root \$name
-      }
-    }
-  }
-  if (-not \$exe -or -not (Test-Path \$exe)) { exit 1 }
-  & \$exe \$arg
-"
+exe="${WEASEL_SERVER:-}"
+if [ -z "$exe" ]; then
+  exit 0
+fi
+
+powershell.exe -NoProfile -Command "& '$exe' $arg"
