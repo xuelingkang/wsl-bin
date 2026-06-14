@@ -1,0 +1,31 @@
+#!/bin/bash
+# Switch Weasel ASCII mode via WeaselServer.exe
+#   ascii  → English mode
+#   nascii → native mode (中文/日本語/한국어...)
+
+case "${1:-}" in
+  ascii)
+    arg="/ascii"
+    ;;
+  nascii)
+    arg="/nascii"
+    ;;
+  *)
+    echo "Usage: weasel-mode {ascii|nascii}"
+    exit 1
+    ;;
+esac
+
+powershell.exe -NoProfile -Command "
+  Add-Type -TypeDefinition '
+    using System;
+    using System.Runtime.InteropServices;
+    public class KeySender {
+        [DllImport(\"user32.dll\")] public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+    }
+  '
+  & 'C:\Program Files\Rime\weasel-0.17.4\WeaselServer.exe' $arg
+  Start-Sleep -Milliseconds 50
+  [KeySender]::keybd_event(0x7C, 0, 0, [UIntPtr]::Zero)
+  [KeySender]::keybd_event(0x7C, 0, 2, [UIntPtr]::Zero)
+"
