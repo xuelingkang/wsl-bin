@@ -1,0 +1,19 @@
+#!/bin/bash
+# Open URLs/files/directories on Windows host from WSL
+#
+# Intended to be used as $BROWSER for xdg-open on WSL.
+# When xdg-open calls this script, it forwards everything to Windows:
+#   - URLs     → Windows default browser (Vivaldi)
+#   - files    → Windows default application
+#   - dirs     → Windows Explorer
+
+target="$1"
+
+# If it's a URL, open with Windows default browser directly
+if echo "$target" | grep -qiE '^[a-zA-Z][a-zA-Z0-9+.-]*://'; then
+    exec powershell.exe -NoProfile -Command "Start-Process '$target'"
+fi
+
+# Otherwise it's a file/dir path — convert WSL path to Windows path first
+win_path=$(wslpath -w "$target" 2>/dev/null || echo "$target")
+exec powershell.exe -NoProfile -Command "Start-Process '$win_path'"
